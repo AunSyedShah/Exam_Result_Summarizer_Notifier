@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Exam Analytics - Exam Result Summarizer{% endblock %}
+
+{% block content %}
+<div class="container-lg">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-1">📊 Exam Analytics</h1>
+            <p class="text-muted">{{ exam.name }} - {{ exam.course }}</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card text-center shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Students</h6>
+                    <h2 class="text-primary">{{ summary.total_students }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card text-center shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Average Marks</h6>
+                    <h2 class="text-success">{{ summary.avg_marks }}%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card text-center shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Pass Rate</h6>
+                    <h2 class="text-info">{{ summary.pass_rate }}%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card text-center shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Median Marks</h6>
+                    <h2 class="text-warning">{{ summary.median_marks }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">Distribution (Pass/Fail/Distinction)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">Average Marks by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="avgMarksChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Stats -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Distinction</h6>
+                    <h3 class="text-success">{{ summary.distinction_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Pass</h6>
+                    <h3 class="text-info">{{ summary.pass_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Fail</h6>
+                    <h3 class="text-danger">{{ summary.fail_count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Scorer -->
+    <div class="row mt-4 mb-4">
+        <div class="col-md-12">
+            <div class="card shadow border-success">
+                <div class="card-body text-center">
+                    <h5 class="text-muted">⭐ Top Scorer</h5>
+                    <h3 class="text-success">{{ summary.top_scorer_name }}</h3>
+                    <p class="mb-0"><strong>{{ summary.top_scorer_marks }}/100</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('results.results', exam_id=exam.id) }}" class="btn btn-outline-secondary">View Results</a>
+                <a href="{{ url_for('feedback.feedback', exam_id=exam.id) }}" class="btn btn-outline-secondary">Generate Feedback</a>
+                <a href="{{ url_for('notifications.notifications', exam_id=exam.id) }}" class="btn btn-outline-secondary">Send Emails</a>
+                <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-primary">← Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Fetch stats from API
+    fetch('/dashboard/api/exam/{{ exam.id }}/stats')
+        .then(response => response.json())
+        .then(data => {
+            // Distribution Chart
+            const distCtx = document.getElementById('distributionChart').getContext('2d');
+            new Chart(distCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Distinction', 'Pass', 'Fail'],
+                    datasets: [{
+                        data: [
+                            data.distribution.Distinction,
+                            data.distribution.Pass,
+                            data.distribution.Fail
+                        ],
+                        backgroundColor: ['#28a745', '#17a2b8', '#dc3545'],
+                        borderColor: ['#fff', '#fff', '#fff'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Average Marks Chart
+            const avgCtx = document.getElementById('avgMarksChart').getContext('2d');
+            new Chart(avgCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Distinction', 'Pass', 'Fail'],
+                    datasets: [{
+                        label: 'Average Marks',
+                        data: [
+                            data.avg_marks.Distinction,
+                            data.avg_marks.Pass,
+                            data.avg_marks.Fail
+                        ],
+                        backgroundColor: ['#28a745', '#17a2b8', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching stats:', error));
+</script>
+{% endblock %}

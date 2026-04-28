@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Exam Result Summarizer{% endblock %}
+
+{% block content %}
+<div class="container-lg">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-2">📊 Dashboard</h1>
+            <p class="text-muted">Welcome back, {{ session.username }}! Manage your exams and results.</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <a href="{{ url_for('upload.upload_csv') }}" class="btn btn-success btn-lg">
+                ➕ Upload New Exam
+            </a>
+        </div>
+    </div>
+
+    {% if exams %}
+        {% for exam in exams %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-0">{{ exam.name }} - {{ exam.course }}</h5>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small>Created: {{ exam.created_at }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <h6 class="text-muted">Total Students</h6>
+                            <h3 class="text-primary">{{ exam.summary.total_students }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <h6 class="text-muted">Pass Rate</h6>
+                            <h3 class="text-success">{{ exam.summary.pass_rate }}%</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <h6 class="text-muted">Average Marks</h6>
+                            <h3 class="text-info">{{ exam.summary.avg_marks }}/100</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <h6 class="text-muted">Top Scorer</h6>
+                            <h3 class="text-warning">{{ exam.summary.top_scorer_marks }}%</h3>
+                            <small>{{ exam.summary.top_scorer_name }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h6>Distribution</h6>
+                        <p>
+                            <span class="badge bg-success">Distinction: {{ exam.summary.distinction_count }}</span>
+                            <span class="badge bg-info">Pass: {{ exam.summary.pass_count }}</span>
+                            <span class="badge bg-danger">Fail: {{ exam.summary.fail_count }}</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <a href="{{ url_for('results.results', exam_id=exam.id) }}" class="btn btn-sm btn-outline-primary">View Results</a>
+                        <a href="{{ url_for('feedback.feedback', exam_id=exam.id) }}" class="btn btn-sm btn-outline-secondary">Manage Feedback</a>
+                        <a href="{{ url_for('notifications.notifications', exam_id=exam.id) }}" class="btn btn-sm btn-outline-info">Send Notifications</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <h5 class="alert-heading">No Exams Yet</h5>
+            <p>Start by uploading your first exam results sheet!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

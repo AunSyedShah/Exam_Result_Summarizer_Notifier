@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Exam - Exam Result Summarizer{% endblock %}
+
+{% block content %}
+<div class="container-lg">
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
+            <h1 class="mb-2">📤 Upload Exam Results</h1>
+            <p class="text-muted">Upload a CSV or Excel file with student marks.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label for="exam_name" class="form-label">Exam Name</label>
+                            <input type="text" class="form-control form-control-lg" id="exam_name" name="exam_name" placeholder="e.g., Mid Semester" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="course_name" class="form-label">Course Name</label>
+                            <input type="text" class="form-control form-control-lg" id="course_name" name="course_name" placeholder="e.g., Data Structures" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="file" class="form-label">CSV / Excel File</label>
+                            <div class="input-group input-group-lg">
+                                <input type="file" class="form-control" id="file" name="file" accept=".csv,.xlsx,.xls" required>
+                                <button class="btn btn-outline-secondary" type="button">Browse</button>
+                            </div>
+                            <small class="text-muted">Required columns: Student Id, Name, Course, Marks</small>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="pass_threshold" class="form-label">Pass Threshold (%)</label>
+                                <div class="input-group input-group-lg">
+                                    <input type="number" class="form-control" id="pass_threshold" name="pass_threshold" value="40" min="0" max="100" step="1" required>
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <small class="text-muted">Min marks to pass</small>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="fail_threshold" class="form-label">Fail Threshold (%)</label>
+                                <div class="input-group input-group-lg">
+                                    <input type="number" class="form-control" id="fail_threshold" name="fail_threshold" value="40" min="0" max="100" step="1" required>
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <small class="text-muted">Min marks to pass</small>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="distinction_threshold" class="form-label">Distinction Threshold (%)</label>
+                                <div class="input-group input-group-lg">
+                                    <input type="number" class="form-control" id="distinction_threshold" name="distinction_threshold" value="70" min="0" max="100" step="1" required>
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <small class="text-muted">Min marks for distinction</small>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">Upload & Process</button>
+                            <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-secondary btn-lg px-5">Cancel</a>
+                        </div>
+                    </form>
+
+                    <hr class="my-5">
+
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">📋 CSV Format</h6>
+                        <p class="mb-2">Your CSV file must have these columns:</p>
+                        <code>Student Id,Name,Course,Marks</code>
+                        <p class="mt-2 mb-0"><strong>Example:</strong><br>S001,John Doe,Data Structures,85<br>S002,Jane Smith,Data Structures,92</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback - Exam Result Summarizer{% endblock %}
+
+{% block content %}
+<div class="container-lg">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-1">💬 Generate Feedback</h1>
+            <p class="text-muted">{{ exam_name }} - {{ course_name }}</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-info" role="alert">
+                <strong>ℹ️ LLM Feedback:</strong> Click the button below to generate personalized feedback for all students using AI.
+            </div>
+            <button id="generateBtn" class="btn btn-primary btn-lg">
+                🤖 Generate Feedback for All
+            </button>
+            <div id="generateStatus" class="mt-3" style="display:none;">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Generating...</span>
+                </div>
+                <span id="statusText">Generating feedback...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">Student Feedback ({{ students|length }} students)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="feedbackAccordion">
+                        {% set prev_status = None %}
+                        {% for student in students %}
+                            {% set status_display = 'Distinction' if student.status == 'Distinction' else 'Pass' if student.status == 'Pass' else 'Fail' %}
+                            {% if prev_status != student.status %}
+                                {% if prev_status is not none %}</div></div></div>{% endif %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button {% if prev_status is not none %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ status_display }}">
+                                            {% if student.status == 'Distinction' %}
+                                                <span class="badge bg-success me-2">Distinction</span>
+                                            {% elif student.status == 'Pass' %}
+                                                <span class="badge bg-info me-2">Pass</span>
+                                            {% else %}
+                                                <span class="badge bg-danger me-2">Fail</span>
+                                            {% endif %}
+                                            ({{ student.status }})
+                                        </button>
+                                    </h2>
+                                    <div id="collapse{{ status_display }}" class="accordion-collapse collapse {% if prev_status is none %}show{% endif %}" data-bs-parent="#feedbackAccordion">
+                                        <div class="accordion-body p-0">
+                                            <div class="list-group list-group-flush">
+                                {% set prev_status = student.status %}
+                            {% endif %}
+                            
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ student.name }} ({{ student.student_id }})</h6>
+                                    <span class="badge bg-dark">{{ student.marks }}/100</span>
+                                </div>
+                                <p class="mb-2 text-muted">{{ student.feedback or 'No feedback yet' }}</p>
+                                <button class="btn btn-sm btn-outline-secondary edit-feedback" data-student-id="{{ student.id }}" data-exam-id="{{ exam_id }}">
+                                    Edit
+                                </button>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Feedback Modal -->
+<div class="modal fade" id="editFeedbackModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <textarea id="feedbackText" class="form-control" rows="4"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveFeedbackBtn">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const generateBtn = document.getElementById('generateBtn');
+    const generateStatus = document.getElementById('generateStatus');
+    const examId = {{ exam_id }};
+
+    generateBtn.addEventListener('click', async function() {
+        generateBtn.disabled = true;
+        generateStatus.style.display = 'block';
+
+        try {
+            const response = await fetch(`/feedback/api/${examId}/generate`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById('statusText').textContent = `✅ Generated ${data.generated} feedbacks!`;
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                document.getElementById('statusText').textContent = '❌ Error generating feedback';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('statusText').textContent = '❌ Error generating feedback';
+        }
+    });
+
+    // Edit feedback
+    document.querySelectorAll('.edit-feedback').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const studentId = this.dataset.studentId;
+            const response = await fetch(`/feedback/api/${examId}/student/${studentId}/feedback`);
+            const data = await response.json();
+            
+            document.getElementById('feedbackText').value = data.feedback || '';
+            document.getElementById('saveFeedbackBtn').dataset.studentId = studentId;
+            
+            const modal = new bootstrap.Modal(document.getElementById('editFeedbackModal'));
+            modal.show();
+        });
+    });
+
+    document.getElementById('saveFeedbackBtn').addEventListener('click', async function() {
+        const studentId = this.dataset.studentId;
+        const feedback = document.getElementById('feedbackText').value;
+
+        const response = await fetch(`/feedback/api/${examId}/student/${studentId}/feedback`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ feedback })
+        });
+
+        if (response.ok) {
+            alert('Feedback saved! Reloading page...');
+            location.reload();
+        }
+    });
+</script>
+{% endblock %}

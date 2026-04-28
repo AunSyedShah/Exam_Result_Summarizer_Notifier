@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Results - Exam Result Summarizer{% endblock %}
+
+{% block content %}
+<div class="container-lg">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-1">📋 Exam Results</h1>
+            <p class="text-muted">{{ exam_name }} - {{ course_name }}</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('dashboard.exam_detail', exam_id=exam_id) }}" class="btn btn-outline-secondary">View Analytics</a>
+                <a href="{{ url_for('feedback.feedback', exam_id=exam_id) }}" class="btn btn-outline-secondary">Generate Feedback</a>
+                <a href="{{ url_for('notifications.notifications', exam_id=exam_id) }}" class="btn btn-outline-secondary">Send Emails</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">Student Results ({{ students|length }} students)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Roll No</th>
+                                    <th>Name</th>
+                                    <th>Marks</th>
+                                    <th>Status</th>
+                                    <th>Feedback</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td><code>{{ student.student_id }}</code></td>
+                                    <td>{{ student.name }}</td>
+                                    <td><strong>{{ student.marks }}/100</strong></td>
+                                    <td>
+                                        {% if student.status == 'Distinction' %}
+                                            <span class="badge bg-success">Distinction</span>
+                                        {% elif student.status == 'Pass' %}
+                                            <span class="badge bg-info">Pass</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Fail</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if student.feedback %}
+                                            <small class="text-muted" title="{{ student.feedback }}">
+                                                {{ student.feedback[:50] }}...
+                                            </small>
+                                        {% else %}
+                                            <small class="text-secondary">Pending</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

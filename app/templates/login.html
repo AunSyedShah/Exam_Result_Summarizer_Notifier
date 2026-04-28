@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Exam Result Summarizer{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center min-vh-100 align-items-center">
+    <div class="col-md-5">
+        <div class="card shadow-lg">
+            <div class="card-body p-5">
+                <h2 class="card-title text-center mb-4">📊 Login</h2>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control form-control-lg" id="username" name="username" required>
+                        <small class="text-muted">Demo: admin or faculty</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                        <small class="text-muted">Demo: admin123 or faculty123</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Login</button>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="alert alert-info" role="alert">
+                    <h6 class="alert-heading">Demo Credentials</h6>
+                    <ul class="mb-0">
+                        <li><strong>Admin:</strong> admin / admin123</li>
+                        <li><strong>Faculty:</strong> faculty / faculty123</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
