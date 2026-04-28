@@ -1,7 +1,7 @@
 # Exam Result Summarizer + Notifier 📊
 
 A comprehensive Flask-based web application for automated exam result processing, student classification, LLM-powered feedback generation, and email notifications.
-
+### please add provided hugging face key in .env file for running and security purpose
 ## Features ✨
 
 - **📤 CSV Upload & Parsing** — Upload exam results (CSV/Excel), automatic validation and parsing
